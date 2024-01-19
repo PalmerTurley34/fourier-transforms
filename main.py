@@ -101,13 +101,23 @@ class FourierVisuals:
         self.line_data = []
         self.canvases = []
 
-        for i, (row, col) in enumerate([(0 ,0), (0, num_cols//2), (1, 0), (1, num_cols//2)]):
+        for i, (row, col) in enumerate([(0 ,0), (0, num_cols//2), (1, 0)]):
             sine_frame = ttk.Frame(self.master)
             sine_frame.grid(row=row, column=col, columnspan=num_cols//2, sticky=NSEW)
             self.create_sine_wave_frame(sine_frame, i)
+        self.sum_of_waves = np.sum(self.sine_waves, axis=0)
+
+        combined_sine_frame = ttk.Frame(self.master)
+        combined_sine_frame.grid(row=1, column=num_cols//2, columnspan=num_cols//2, sticky=NSEW)
+        fig = plt.figure()
+        self.combined_ax = fig.add_subplot(1,1,1)
+        self.combined_canvas = FigureCanvasTkAgg(fig, combined_sine_frame)
+        widget = self.combined_canvas.get_tk_widget()
+        widget.pack(fill=BOTH, expand=YES)
+        
 
         wrap_frame = ttk.Frame(self.master, bootstyle=SUCCESS)
-        wrap_frame.grid(row=2, column=0, columnspan=2, sticky=NSEW)
+        wrap_frame.grid(row=2, column=0, columnspan=1, sticky=NSEW)
         fig = plt.figure()
         self.wrap_ax = fig.add_subplot(1,1,1)
         self.wrap_ax.set_xlim((-6, 6))
@@ -116,6 +126,7 @@ class FourierVisuals:
         self.wrap_canvas = FigureCanvasTkAgg(fig, wrap_frame)
         widget = self.wrap_canvas.get_tk_widget()
         widget.pack(side=LEFT, fill=BOTH, expand=YES)
+        self.update_combined_graph()
 
         wrap_slider_frame = ttk.Labelframe(wrap_frame, text='Freq', labelanchor='n', bootstyle=WARNING)
         wrap_slider_frame.pack(side=LEFT, fill=Y)
@@ -124,12 +135,10 @@ class FourierVisuals:
         wrap_freq_slider = ttk.Scale(wrap_slider_frame, orient=VERTICAL, variable=self.wrap_freq_var, from_=10.0, to=0.0, command=self.update_wrap_graph)
         wrap_freq_slider.pack(side=TOP, expand=YES, fill=Y)
         ttk.Label(wrap_slider_frame, text='0 Hz').pack(side=TOP, pady=2)
-        self.sum_of_waves = np.sum(self.sine_waves, axis=0)
-        fft_step = self.sum_of_waves * np.exp(-2j * np.pi * self.wrap_freq_var.get() * np.arange(512) / 512)
-        self.wrap_line = self.wrap_ax.plot(fft_step.real, fft_step.imag)[0]
+        self.update_wrap_graph()
         
         fft_frame = ttk.Frame(self.master, bootstyle=WARNING)
-        fft_frame.grid(row=2, column=2, columnspan=4, sticky=NSEW)
+        fft_frame.grid(row=2, column=1, columnspan=5, sticky=NSEW)
 
     def create_sine_wave_frame(self, master: ttk.Frame, index: int):
         master.rowconfigure(0, weight=1)
@@ -146,7 +155,7 @@ class FourierVisuals:
         freq_frame.grid(row=0, column=0, columnspan=num_cols//2, sticky=NSEW, padx=5)
         ttk.Label(freq_frame, text='0 Hz').pack(side=LEFT, fill=Y, padx=2)
         freq_slider = ttk.Scale(freq_frame, orient=HORIZONTAL, variable=freq_var, from_=0.0, to=10.0, command=lambda x: self.update_sine_wave(index))
-        freq_slider.pack(side=LEFT, fill=BOTH, expand=YES)
+        freq_slider.pack(side=LEFT, fill=BOTH, expand=YES, pady=2)
         ttk.Label(freq_frame, text='10 Hz').pack(side=LEFT, fill=Y, padx=2)
 
         phase_frame = ttk.Labelframe(master, labelanchor='nw', text='Phase', bootstyle=WARNING)
@@ -171,6 +180,9 @@ class FourierVisuals:
         widget.pack(fill=BOTH, expand=TRUE)
         ax = fig.add_subplot(1, 1, 1)
         ax.set_ylim((-6, 6))
+        ax.set_title(f'Sine wave {index + 1}')
+        ax.set_xlabel('Radians')
+        ax.set_ylabel('Amplitude')
         sine_wave = amp_var.get() * np.sin(freq_var.get() * self.sine_x + phs_var.get())
         line = ax.plot(self.sine_x, sine_wave)
         line = line[0]
@@ -189,18 +201,40 @@ class FourierVisuals:
         self.sine_waves[index] = new_sine_wave
 
         canvas: FigureCanvasTkAgg = self.canvases[index]
+        self.update_combined_graph()
         self.update_wrap_graph()
         canvas.draw()
-        self.wrap_canvas.flush_events()
-        canvas.flush_events()
+
+    def update_combined_graph(self):
+        self.combined_ax.cla()
+        self.sum_of_waves = np.sum(self.sine_waves, axis=0)
+        self.combined_ax.plot(self.sine_x, self.sum_of_waves)[0]
+        self.combined_ax.set_title('Sine Waves Combined')
+        self.combined_ax.set_xlabel('Radians')
+        self.combined_ax.set_ylabel('Amplitude')        
+        self.combined_canvas.draw()
+
 
     def update_wrap_graph(self, value=None):
-        self.sum_of_waves = np.sum(self.sine_waves, axis=0)
+        
         fft_step = self.sum_of_waves * np.exp(-2j * np.pi * self.wrap_freq_var.get() * np.arange(512) / 512)
-        self.wrap_line.set_ydata(fft_step.imag)
-        self.wrap_line.set_xdata(fft_step.real)
+        fft_point = np.mean(fft_step)
+        self.wrap_ax.cla()
+        self.wrap_ax.plot(fft_step.real, fft_step.imag, color='orange')
+        self.wrap_ax.plot(fft_point.real, fft_point.imag, marker='o', markersize=8, markerfacecolor='red', markeredgecolor='red')
+        x_min, x_max = self.wrap_ax.get_xlim()
+        y_min, y_max = self.wrap_ax.get_ylim()
+        max_value = max([abs(value) for value in (x_min, x_max, y_min, y_max)]) + 1
+        self.wrap_ax.set_xlim((-max_value, max_value))
+        self.wrap_ax.set_ylim((-max_value, max_value))
+        self.wrap_ax.grid(False)
+        self.wrap_ax.axhline(0, color='grey', linewidth=0.5)
+        self.wrap_ax.axvline(0, color='grey', linewidth=0.5)
+        self.wrap_ax.set_title('Wrapped Signal')
+        self.wrap_ax.set_xlabel('Real axis')
+        self.wrap_ax.set_ylabel('Imaginary Axis')
+
         self.wrap_canvas.draw()
-        # self.wrap_canvas.flush_events()
 
     def close(self):
         self.master.quit()
