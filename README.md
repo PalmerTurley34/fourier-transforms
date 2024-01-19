@@ -12,9 +12,14 @@ The next plot allows you to visualize adding the three sinusoids together.
 The last two plots help to visualize the fourier transform, going from the
 time domain to the frequency domain. The first plot here allows you to visualize
 the math behind the fourier tranform by wrapping
-the sinusoid around a circle at a given, varying, frequency and plotting the *mean* of the signal.
-The last plot is the output of the **fourier transform itself, also mapping
+the sinusoid around a circle at a given, varying, frequency and plotting the <sup>1</sup>mean of the signal.
+The last plot is the output of the <sup>2</sup>fourier transform itself, also mapping
 the mean point from the previous plot over to show the correlation.
+
+<sup>1</sup> The mean is used here instead of the sum solely for plotting puposes. The sum makes the 
+plotting boundaries to large in most cases to fully appreciate the wrapped signal.
+
+<sup>2</sup> This isn't the output of a traditional fourier transform or fft. Again, becuase the mean is used instead of the sum, but also because I wanted a higher bin resolution for frequecies between 0 Hz and 10 Hz. So I used a custom range of frequecies for better bin resolution.
 
 ## Installation and Dependencies
 
