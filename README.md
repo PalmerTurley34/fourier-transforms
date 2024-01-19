@@ -4,6 +4,8 @@ Visualization gui for fourier transformations
 
 Heavily inspired by a 3 Blue 1 Brown [video](https://www.youtube.com/watch?v=spUNpyF58BY) on the topic. It's well worth a watch!
 
+![GUI Example](gui_example.png "Screenshot")
+
 A visualization to for sinusoid wave forms and fourier transforms.
 The gui is made up of 6 six interacive plots. The first three plots allow
 you to create sinusoid waves with varying frequency, phase shift, and amplitude.
