@@ -6,7 +6,7 @@ Heavily inspired by a 3 Blue 1 Brown [video](https://www.youtube.com/watch?v=spU
 
 ![GUI Example](gui_example.png "Screenshot")
 
-A visualization to for sinusoid wave forms and fourier transforms.
+A visualization tool for sinusoid wave forms and fourier transforms.
 The gui is made up of 6 six interacive plots. The first three plots allow
 you to create sinusoid waves with varying frequency, phase shift, and amplitude.
 The next plot allows you to visualize adding the three sinusoids together.
@@ -14,9 +14,9 @@ The next plot allows you to visualize adding the three sinusoids together.
 The last two plots help to visualize the fourier transform, going from the
 time domain to the frequency domain. The first plot here allows you to visualize
 the math behind the fourier tranform by wrapping
-the sinusoid around a circle at a given, varying, frequency and plotting the <sup>1</sup>mean of the signal.
-The last plot is the output of the <sup>2</sup>fourier transform itself, also mapping
-the mean point from the previous plot over to show the correlation.
+the sinusoid around a circle at a given, varying, frequency and plotting the mean of the signal.<sup>1</sup>
+The last plot is the output of the fourier transform itself, also mapping
+the mean point from the previous plot over to show the correlation.<sup>2</sup>
 
 <sup>1</sup> The mean is used here instead of the sum solely for plotting puposes. The sum makes the 
 plotting boundaries to large in most cases to fully appreciate the wrapped signal.
